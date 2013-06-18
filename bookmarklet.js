@@ -61,7 +61,7 @@ var CSSRules = [
 		background-color:transparent;\
 		box-sizing:border-box;\
 		display:block;\
-		height:100%;\
+		height:calc(100% - 45px);\
 		padding:10px;\
 		pointer-events:none;\
 		position:fixed;\
@@ -514,6 +514,7 @@ var highlightCurrent = function() {
 
   if (max.li) {
     addClass(max.li, 'current');
+    max.li.scrollIntoView();
   }
 };
 
