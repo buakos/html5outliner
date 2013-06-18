@@ -104,6 +104,9 @@ var CSSRules = [
 	"#h5o-inside li.h5o-notitle>a{\
 		font-style:italic;\
 	}",
+	"#h5o-inside li.current>a{\
+    color: red;\
+	}",
 ];
 if(numbering > 0) CSSRules.push("#h5o-inside li::before{\
 		content:" + (numbering === 2 ? "counters(li,\".\")" : "counter(li)") + "\".\";\
@@ -120,6 +123,9 @@ else CSSRules.push("#h5o-inside>ol>li{margin-left:0;}");
 if(!window.h5o_sdWoNJpsAgQGAaf) window.h5o_sdWoNJpsAgQGAaf = function() {
 	document.removeEventListener("click", h5o_sdWoNJpsAgQGAaf, false);
 	document.body.removeChild(document.getElementById("h5o-outside"));
+  nodeLiPairs = null;
+  window.removeEventListener('scroll', highlightCurrent);
+  window.h5o_sdWoNJpsAgQGAaf = null;
 };
 
 if(document.getElementById("h5o-outside")) {
@@ -148,6 +154,8 @@ if(clickOutside) {
 	inside.addEventListener("click", function(event) {event.stopPropagation();}, false);
 	document.addEventListener("click", h5o_sdWoNJpsAgQGAaf, false);
 }
+
+var nodeLiPairs = [];
 
 // Create outline
 HTMLOutline(document.body);
@@ -184,6 +192,7 @@ function printSection(section) {
 	var node = section.associatedNodes[0];
 	if(node.sectionType !== 1 && node.sectionType !== 2) node = section.heading;
 	title.href = "#" + node.id;
+  nodeLiPairs.push({node: node, li: li});
 	
 	title.addEventListener("click", function(event) {
 		event.preventDefault();
@@ -462,6 +471,53 @@ function HTMLOutline(root) {
 		}
 	}
 }
+
+var highlightCurrent = function() {
+  var nlp = nodeLiPairs;
+  if (!nlp) {
+    return;
+  }
+
+  var removeClass = function(e, c) {
+    if (e.classList) {
+      e.classList.remove(c);
+    } else {
+      e.className = ''; // We use only one class
+    }
+  };
+
+  var addClass = function(e, c) {
+    if (e.classList) {
+      e.classList.add(c);
+    } else {
+      e.className = c; // We use only one class
+    }
+  };
+
+  var max = {
+    pos: Number.NEGATIVE_INFINITY,
+    li: null
+  };
+
+  for (var i = nlp.length - 1; i >= 0; i--) {
+    var li = nlp[i].li;
+    removeClass(li, 'current');
+
+    var pos = nlp[i].node.getBoundingClientRect().top;
+    if (pos < 5 && pos > max.pos) {
+      max.pos = pos;
+      max.li = li;
+    }
+  }
+
+  if (max.li) {
+    addClass(max.li, 'current');
+  }
+};
+
+highlightCurrent();
+
+window.addEventListener('scroll', highlightCurrent);
 
 })();
 
