@@ -532,60 +532,51 @@
     }
   }
 
+  var scrollIntoViewIfNeeded = function(li) {
+    var offset = inside.clientHeight / 20;
+    var top = 0;
+    for (e = li; e && e !== inside; e = e.offsetParent) {
+      top += e.offsetTop;
+    }
+
+    if (top < inside.scrollTop + offset) {
+      inside.scrollTop = top - offset;
+    } else if (top > inside.scrollTop + inside.clientHeight - offset) {
+      inside.scrollTop = top - inside.clientHeight + offset;
+    }
+  };
+
+  var lastCurrent = null;
+
   var highlightCurrent = function() {
     var nlp = nodeLiPairs;
     if (!nlp) {
       return;
     }
 
-    var removeClass = function(e, c) {
-      if (e.classList) {
-        e.classList.remove(c);
-      } else {
-        e.className = ''; // We use only one class
-      }
-    };
-
-    var addClass = function(e, c) {
-      if (e.classList) {
-        e.classList.add(c);
-      } else {
-        e.className = c; // We use only one class
-      }
-    };
-
-    var scrollIntoViewIfNeeded = function(li) {
-      var offset = inside.clientHeight / 20;
-      var top = 0;
-      for (e = li; e && e !== inside; e = e.offsetParent) {
-        top += e.offsetTop;
-      }
-
-      if (top < inside.scrollTop + offset) {
-        inside.scrollTop = top - offset;
-      } else if (top > inside.scrollTop + inside.clientHeight - offset) {
-        inside.scrollTop = top - inside.clientHeight + offset;
-      }
-    };
-
     var max = {
       pos: Number.NEGATIVE_INFINITY,
       li: null
     };
 
+    if (lastCurrent) {
+      lastCurrent.className = '';
+    }
+
     for (var i = nlp.length - 1; i >= 0; i--) {
       var li = nlp[i].li;
-      removeClass(li, 'current');
 
       var pos = nlp[i].node.getBoundingClientRect().top;
       if (pos < 5 && pos > max.pos) {
         max.pos = pos;
         max.li = li;
+        break;
       }
     }
 
     if (max.li) {
-      addClass(max.li, 'current');
+      max.li.className = 'current';
+      lastCurrent = max.li;
       scrollIntoViewIfNeeded(max.li);
     }
   };
