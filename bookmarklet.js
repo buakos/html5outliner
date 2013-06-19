@@ -80,7 +80,8 @@
 			max-width:100%;\
 			max-height:100%;\
 			opacity:.9;\
-			overflow:auto;\
+			overflow-x:auto;\
+			overflow-y:scroll;\
 			padding:10px;\
 			pointer-events:auto;\
 		}",
