@@ -60,8 +60,9 @@
     "#h5o-outside{\
 			background-color:transparent;\
 			box-sizing:border-box;\
+			-moz-box-sizing:border-box;\
 			display:block;\
-			height:calc(100% - 45px);\
+			height:100%;\
 			padding:10px;\
 			pointer-events:none;\
 			position:fixed;\
@@ -74,6 +75,7 @@
 			background-color:white;\
 			border:2px solid black;\
 			box-sizing:border-box;\
+			-moz-box-sizing:border-box;\
 			display:block;\
 			max-width:100%;\
 			max-height:100%;\
