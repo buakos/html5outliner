@@ -107,9 +107,15 @@
     "#h5o-inside li.h5o-notitle>a{\
 			font-style:italic;\
 		}",
-    "#h5o-inside li.current>a::after{\
-			content: url(\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAMCAIAAADd4huNAAAACXBIWXMAAAsSAAALEgHS3X78AAABLUlEQVQokXWQsU7CUBiFz723pTQVhESTJsZoNKQaF3cWZxdZ2Bn0GeQRNNH4Ahhjoq5ieACiwgs44aQoWopYQahtU+p1KFHQ+m0n+XLynx98nPOKruXKWq7M/0AxQrHaPLtubWU1hEFHvdOr1koqKcliqEo454F3ctlaTiXaLrf6A0N/rz90Q9RitXlcNrTFhOF8NnWbUiJLbH5OUUQqMgJAjUf2Dm8EAPlCLbu+cNfxnp8s3+cA+hYc6advdWYCgBCEnuO/tW3XHQQqAPe+9602KB2qO5tLB6XG1LQiitRxPUqILLOYEolGmcAIgFg8MjZrv9SYTMqvpgMC7vkd8+PXrOEBmbQKYPfiUYlHmUDrty+1o7V//5pJq9sbs13TBmOhfxVGQ9CdL9RC1S/m75c+fEIwVgAAAABJRU5ErkJggg==\");\
+    "#h5o-inside li span.marker{\
+			display: inline-block;\
+			width: 14px;\
+			height: 12px;\
 			margin-left: 5px;\
+		}",
+    "#h5o-inside li.current>span.marker{\
+			background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAMCAIAAADd4huNAAAACXBIWXMAAAsSAAALEgHS3X78AAABLUlEQVQokXWQsU7CUBiFz723pTQVhESTJsZoNKQaF3cWZxdZ2Bn0GeQRNNH4Ahhjoq5ieACiwgs44aQoWopYQahtU+p1KFHQ+m0n+XLynx98nPOKruXKWq7M/0AxQrHaPLtubWU1hEFHvdOr1koqKcliqEo454F3ctlaTiXaLrf6A0N/rz90Q9RitXlcNrTFhOF8NnWbUiJLbH5OUUQqMgJAjUf2Dm8EAPlCLbu+cNfxnp8s3+cA+hYc6advdWYCgBCEnuO/tW3XHQQqAPe+9602KB2qO5tLB6XG1LQiitRxPUqILLOYEolGmcAIgFg8MjZrv9SYTMqvpgMC7vkd8+PXrOEBmbQKYPfiUYlHmUDrty+1o7V//5pJq9sbs13TBmOhfxVGQ9CdL9RC1S/m75c+fEIwVgAAAABJRU5ErkJggg==);\
+			background-repeat: no-repeat;\
 		}"
   ];
   if (numbering > 0)
@@ -232,6 +238,10 @@
       details += "#nodes:" + section.associatedNodes.length;
       title.title = details;
     }
+
+    var marker = document.createElement('span');
+    marker.className = 'marker';
+    li.appendChild(marker);
 
     li.appendChild(printOutline(section.childSections));
     return li;
