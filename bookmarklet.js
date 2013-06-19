@@ -84,6 +84,7 @@
 			overflow-y:scroll;\
 			padding:10px;\
 			pointer-events:auto;\
+			position:relative;\
 		}",
     "#h5o-inside ol{\
 			counter-reset:li;\
@@ -553,6 +554,20 @@
       }
     };
 
+    var scrollIntoViewIfNeeded = function(li) {
+      var offset = inside.clientHeight / 20;
+      var top = 0;
+      for (e = li; e && e !== inside; e = e.offsetParent) {
+        top += e.offsetTop;
+      }
+
+      if (top < inside.scrollTop + offset) {
+        inside.scrollTop = top - offset;
+      } else if (top > inside.scrollTop + inside.clientHeight - offset) {
+        inside.scrollTop = top - inside.clientHeight + offset;
+      }
+    };
+
     var max = {
       pos: Number.NEGATIVE_INFINITY,
       li: null
@@ -571,7 +586,7 @@
 
     if (max.li) {
       addClass(max.li, 'current');
-      max.li.scrollIntoView();
+      scrollIntoViewIfNeeded(max.li);
     }
   };
 
