@@ -537,7 +537,7 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
   }
 
   var scrollIntoViewIfNeeded = function(li) {
-    var offset = inside.clientHeight / 20;
+    var offset = 40;
     var top = 0;
     for (e = li; e && e !== inside; e = e.offsetParent) {
       top += e.offsetTop;
@@ -550,7 +550,7 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
     }
   };
 
-  var lastCurrent = null;
+  var current = null;
 
   var highlightCurrent = function() {
     var nlp = nodeLiPairs;
@@ -558,30 +558,24 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
       return;
     }
 
-    var max = {
-      pos: Number.NEGATIVE_INFINITY,
-      li: null
-    };
-
-    if (lastCurrent) {
-      lastCurrent.className = '';
+    if (current) {
+      current.className = '';
+      current = null;
     }
 
+    // We search for the last li which has a top (viewport) coordinate near to 0.
+    // As the nodeLiPairs should be in ascending order, the search goes in negative direction, stopping at the first hit.
     for (var i = nlp.length - 1; i >= 0; i--) {
-      var li = nlp[i].li;
-
       var pos = nlp[i].node.getBoundingClientRect().top;
-      if (pos < 5 && pos > max.pos) {
-        max.pos = pos;
-        max.li = li;
+      if (pos < 5) {
+        current = nlp[i].li;
         break;
       }
     }
 
-    if (max.li) {
-      max.li.className = 'current';
-      lastCurrent = max.li;
-      scrollIntoViewIfNeeded(max.li);
+    if (current) {
+      current.className = 'current';
+      scrollIntoViewIfNeeded(current);
     }
   };
 
