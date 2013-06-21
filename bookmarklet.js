@@ -142,7 +142,7 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
     window.h5o_sdWoNJpsAgQGAaf = function() {
       document.removeEventListener("click", h5o_sdWoNJpsAgQGAaf, false);
       document.body.removeChild(document.getElementById("h5o-outside"));
-      nodeLiPairs = null;
+      tocItems = null;
       window.removeEventListener('scroll', highlightCurrent);
       window.h5o_sdWoNJpsAgQGAaf = null;
     };
@@ -177,7 +177,7 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
     document.addEventListener("click", h5o_sdWoNJpsAgQGAaf, false);
   }
 
-  var nodeLiPairs = [];
+  var tocItems = [];
 
   // Create outline
   HTMLOutline(document.body);
@@ -228,7 +228,6 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
     if (node.sectionType !== 1 && node.sectionType !== 2)
       node = section.heading;
     title.href = "#" + node.id;
-    nodeLiPairs.push({node: node, li: li});
 
     title.addEventListener("click", function(event) {
       event.preventDefault();
@@ -249,6 +248,7 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
     marker.className = 'marker';
     li.appendChild(marker);
 
+    tocItems.push({node: node, li: li, marker: marker});
     li.appendChild(printOutline(section.childSections));
     return li;
   }
@@ -536,46 +536,57 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
     }
   }
 
-  var scrollIntoViewIfNeeded = function(li) {
-    var offset = 40;
+  var getOffsetTop = function(e) {
     var top = 0;
-    for (e = li; e && e !== inside; e = e.offsetParent) {
+    for (; e && e !== inside; e = e.offsetParent) {
       top += e.offsetTop;
     }
+    return top;
+  };
+
+  var scrollIntoViewIfNeeded = function(ti) {
+    var offset = 40;
+    // The top comes from the li, the bottom from the marker.
+    // We recompute them each time, as they could change due to zooming or (potential) wrapping.
+    var top = getOffsetTop(ti.li);
+    var bottom = top + ti.marker.offsetTop + ti.marker.offsetHeight;  // The marker is the offsetChild of the li.
 
     if (top < inside.scrollTop + offset) {
       inside.scrollTop = top - offset;
-    } else if (top > inside.scrollTop + inside.clientHeight - offset) {
-      inside.scrollTop = top - inside.clientHeight + offset;
+    } else if (bottom > inside.scrollTop + inside.clientHeight - offset) {
+      inside.scrollTop = bottom - inside.clientHeight + offset;
     }
   };
 
   var current = null;
 
   var highlightCurrent = function() {
-    var nlp = nodeLiPairs;
-    if (!nlp) {
+    var tis = tocItems;
+    if (!tis) {
       return;
     }
 
-    if (current) {
-      current.className = '';
-      current = null;
-    }
+    var newCurrent = null;
 
-    // We search for the last li which has a top (viewport) coordinate near to 0.
-    // As the nodeLiPairs should be in ascending order, the search goes in negative direction, stopping at the first hit.
-    for (var i = nlp.length - 1; i >= 0; i--) {
-      var pos = nlp[i].node.getBoundingClientRect().top;
+    // We search for the last item which has a top (viewport) coordinate near to 0.
+    // As the tocItems array is (should be) in ascending order, the search goes in negative direction, stopping at the first hit.
+    for (var i = tis.length - 1; i >= 0; i--) {
+      var pos = tis[i].node.getBoundingClientRect().top;
       if (pos < 5) {
-        current = nlp[i].li;
+        newCurrent = tis[i];
         break;
       }
     }
 
-    if (current) {
-      current.className = 'current';
-      scrollIntoViewIfNeeded(current);
+    if (newCurrent !== current) {
+      if (current !== null) {
+        current.li.className = '';
+      }
+      current = newCurrent;
+      if (current !== null) {
+        current.li.className = 'current';
+        scrollIntoViewIfNeeded(current);
+      }
     }
   };
 
