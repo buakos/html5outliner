@@ -621,25 +621,46 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
 
         var highlightCurrent = function() {
           var tis = tocItems;
-          if (!tis) {
+          if (!tis || tis.length <= 0) {
             return;
           }
 
           var newCurrent = null;
           var lastNegative = null;
+
           var viewportMiddle = document.documentElement.clientHeight / 2 - 10;
 
           // We assume that the nodes in the tocItems are in ascending order.
           // The current item is either:
           //  - the first one in the top half of the viewport, or (if not present)
           //  - the last one above it (ie. with negative coordinates)
-          for (var i = 0; i < tis.length; i++) {
+
+          // We loop twice from start, into negative and positive direction
+          var start = current ? current : Math.floor(tis.length / 2);
+
+          // First loop, until the first negative position
+          for (var i = start; i >= 0; i--) {
             var pos = tis[i].node.getBoundingClientRect().top;
             if (pos < 0) {
-              lastNegative = tis[i];
-            } else if (pos >= 0 && pos <= viewportMiddle) {
-              newCurrent = tis[i];
+              lastNegative = i;
               break;
+            } else if (pos >= 0 && pos <= viewportMiddle) {
+              newCurrent = i;
+            }
+          }
+
+          // Second loop (if needed), until the first hit or beyond the middle
+          if (!newCurrent) {
+            for (var i = start; i < tis.length; i++) {
+              var pos = tis[i].node.getBoundingClientRect().top;
+              if (pos < 0) {
+                lastNegative = i;
+              } else if (pos >= 0 && pos <= viewportMiddle) {
+                newCurrent = i;
+                break;
+              } else if (pos > viewportMiddle) {
+                break;
+              }
             }
           }
 
@@ -649,12 +670,12 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
 
           if (newCurrent !== current) {
             if (current !== null) {
-              current.li.className = '';
+              tis[current].li.className = '';
             }
             current = newCurrent;
             if (current !== null) {
-              current.li.className = 'current';
-              scrollIntoViewIfNeeded(current);
+              tis[current].li.className = 'current';
+              scrollIntoViewIfNeeded(tis[current]);
             }
           }
         };
