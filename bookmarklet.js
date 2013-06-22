@@ -587,6 +587,8 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
 
     if (highlighting) {
       toDispose.push((function() {
+        var initialRun = true;
+
         var getOffsetTop = function(e) {
           var top = 0;
           for (; e && e !== inside; e = e.offsetParent) {
@@ -602,10 +604,16 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
           var top = getOffsetTop(ti.li);
           var bottom = top + ti.marker.offsetTop + ti.marker.offsetHeight;  // The marker is the offsetChild of the li.
 
-          if (top < inside.scrollTop + offset) {
-            inside.scrollTop = top - offset;
-          } else if (bottom > inside.scrollTop + inside.clientHeight - offset) {
-            inside.scrollTop = bottom - inside.clientHeight + offset;
+          if (initialRun) {
+            // At first run we position the element into the middle
+            var diff = top - inside.clientHeight / 2 + (bottom - top) / 2;
+            inside.scrollTop += diff;
+          } else {
+            if (top < inside.scrollTop + offset) {
+              inside.scrollTop = top - offset;
+            } else if (bottom > inside.scrollTop + inside.clientHeight - offset) {
+              inside.scrollTop = bottom - inside.clientHeight + offset;
+            }
           }
         };
 
@@ -652,6 +660,8 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
         };
 
         highlightCurrent();
+        initialRun = false;
+
         document.addEventListener('scroll', highlightCurrent, false);
         /* DD1 */ console.log(runId, 'highlighter hooked');
 
