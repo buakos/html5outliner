@@ -1,6 +1,6 @@
 (function() {
   /*____BEGIN_OPTIONS____*/
-  var numbering = 0001, linkColor = '', clickOutside = true, showDetails = false, highlighting = true, closeOnEsc = true, hotkey = true;
+  var numbering = 0001, linkColor = '', clickOutside = false, showDetails = false, highlighting = true, closeOnEsc = true, hotkey = true;
   /*_____END_OPTIONS_____*/
 
   /*_____BEGIN_CSS_____*/
@@ -617,15 +617,25 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
           }
 
           var newCurrent = null;
+          var lastNegative = null;
+          var viewportMiddle = document.documentElement.clientHeight / 2 - 10;
 
-          // We search for the last item which has a top (viewport) coordinate near to 0.
-          // As the tocItems array is (should be) in ascending order, the search goes in negative direction, stopping at the first hit.
-          for (var i = tis.length - 1; i >= 0; i--) {
+          // We assume that the nodes in the tocItems are in ascending order.
+          // The current item is either:
+          //  - the first one in the top half of the viewport, or (if not present)
+          //  - the last one above it (ie. with negative coordinates)
+          for (var i = 0; i < tis.length; i++) {
             var pos = tis[i].node.getBoundingClientRect().top;
-            if (pos < 5) {
+            if (pos < 0) {
+              lastNegative = tis[i];
+            } else if (pos >= 0 && pos <= viewportMiddle) {
               newCurrent = tis[i];
               break;
             }
+          }
+
+          if (!newCurrent && lastNegative) {
+            newCurrent = lastNegative;
           }
 
           if (newCurrent !== current) {

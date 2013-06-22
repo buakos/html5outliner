@@ -21,14 +21,17 @@
             if (depth < 5 && Math.random() > .3) {
               generateLevel(depth + 1, headingPrefix);
             } else {
-              var p = doc.createElement('p');
-              p.textContent = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque mattis nisi felis, nec condimentum nulla rutrum et. \
+              var pCount = Math.round(Math.random() * 5) + 1;
+              for (var j = 0; j < pCount; j++) {
+                var p = doc.createElement('p');
+                p.textContent = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque mattis nisi felis, nec condimentum nulla rutrum et. \
 Etiam id dictum augue. Ut laoreet at risus eu tristique. Integer eget venenatis enim. Vivamus ut urna fermentum, blandit \
 nisi aliquam, hendrerit tellus. Sed feugiat a elit a adipiscing. Mauris vestibulum, dolor non gravida mollis, lectus est \
 volutpat dui, vitae accumsan nisi leo in nulla. Nam luctus ultrices est at tempor. Suspendisse ac purus vehicula, pretium \
 sapien eu, tincidunt ligula. Proin euismod ante at lorem euismod, eget iaculis est viverra. Etiam tempus non odio in facilisis. \
 Quisque sed enim gravida risus feugiat cursus. Proin non erat sodales, molestie tellus a, eleifend dui.';
-              body.appendChild(p);
+                body.appendChild(p);
+              }
             }
           }
         };
