@@ -1,6 +1,6 @@
 (function() {
   /*____BEGIN_OPTIONS____*/
-  var numbering = 0001, linkColor = '', clickOutside = true, showDetails = false;
+  var numbering = 0001, linkColor = '', clickOutside = true, showDetails = false, highlighting = false;
   /*_____END_OPTIONS_____*/
 
   /*_____BEGIN_CSS_____*/
@@ -143,7 +143,9 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
       document.removeEventListener("click", h5o_sdWoNJpsAgQGAaf, false);
       document.body.removeChild(document.getElementById("h5o-outside"));
       tocItems = null;
-      window.removeEventListener('scroll', highlightCurrent);
+      if (highlighting) {
+        window.removeEventListener('scroll', highlightCurrent);
+      }
       window.h5o_sdWoNJpsAgQGAaf = null;
     };
 
@@ -536,63 +538,65 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
     }
   }
 
-  var getOffsetTop = function(e) {
-    var top = 0;
-    for (; e && e !== inside; e = e.offsetParent) {
-      top += e.offsetTop;
-    }
-    return top;
-  };
-
-  var scrollIntoViewIfNeeded = function(ti) {
-    var offset = 40;
-    // The top comes from the li, the bottom from the marker.
-    // We recompute them each time, as they could change due to zooming or (potential) wrapping.
-    var top = getOffsetTop(ti.li);
-    var bottom = top + ti.marker.offsetTop + ti.marker.offsetHeight;  // The marker is the offsetChild of the li.
-
-    if (top < inside.scrollTop + offset) {
-      inside.scrollTop = top - offset;
-    } else if (bottom > inside.scrollTop + inside.clientHeight - offset) {
-      inside.scrollTop = bottom - inside.clientHeight + offset;
-    }
-  };
-
-  var current = null;
-
-  var highlightCurrent = function() {
-    var tis = tocItems;
-    if (!tis) {
-      return;
-    }
-
-    var newCurrent = null;
-
-    // We search for the last item which has a top (viewport) coordinate near to 0.
-    // As the tocItems array is (should be) in ascending order, the search goes in negative direction, stopping at the first hit.
-    for (var i = tis.length - 1; i >= 0; i--) {
-      var pos = tis[i].node.getBoundingClientRect().top;
-      if (pos < 5) {
-        newCurrent = tis[i];
-        break;
+  if (highlighting) {
+    var getOffsetTop = function(e) {
+      var top = 0;
+      for (; e && e !== inside; e = e.offsetParent) {
+        top += e.offsetTop;
       }
-    }
+      return top;
+    };
 
-    if (newCurrent !== current) {
-      if (current !== null) {
-        current.li.className = '';
+    var scrollIntoViewIfNeeded = function(ti) {
+      var offset = 40;
+      // The top comes from the li, the bottom from the marker.
+      // We recompute them each time, as they could change due to zooming or (potential) wrapping.
+      var top = getOffsetTop(ti.li);
+      var bottom = top + ti.marker.offsetTop + ti.marker.offsetHeight;  // The marker is the offsetChild of the li.
+
+      if (top < inside.scrollTop + offset) {
+        inside.scrollTop = top - offset;
+      } else if (bottom > inside.scrollTop + inside.clientHeight - offset) {
+        inside.scrollTop = bottom - inside.clientHeight + offset;
       }
-      current = newCurrent;
-      if (current !== null) {
-        current.li.className = 'current';
-        scrollIntoViewIfNeeded(current);
+    };
+
+    var current = null;
+
+    var highlightCurrent = function() {
+      var tis = tocItems;
+      if (!tis) {
+        return;
       }
-    }
-  };
 
-  highlightCurrent();
+      var newCurrent = null;
 
-  window.addEventListener('scroll', highlightCurrent);
+      // We search for the last item which has a top (viewport) coordinate near to 0.
+      // As the tocItems array is (should be) in ascending order, the search goes in negative direction, stopping at the first hit.
+      for (var i = tis.length - 1; i >= 0; i--) {
+        var pos = tis[i].node.getBoundingClientRect().top;
+        if (pos < 5) {
+          newCurrent = tis[i];
+          break;
+        }
+      }
+
+      if (newCurrent !== current) {
+        if (current !== null) {
+          current.li.className = '';
+        }
+        current = newCurrent;
+        if (current !== null) {
+          current.li.className = 'current';
+          scrollIntoViewIfNeeded(current);
+        }
+      }
+    };
+
+    highlightCurrent();
+
+    window.addEventListener('scroll', highlightCurrent);
+  }
 
 })();
 

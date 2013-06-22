@@ -16,7 +16,7 @@
             var heading = doc.createElement(hn);
             var headingPrefix = prefix + i + '.';
             heading.textContent = headingPrefix +
-              ' A very long heading for testing wrapping issues. Nam nec lorem ut justo dignissim interdum. Praesent rhoncus lorem ac semper semper. Aliquam vitae volutpat risus. Nam nec lorem ut justo dignissim interdum.';
+              (Math.random() > .8 ? ' A very long heading for testing wrapping issues. Nam nec lorem ut justo dignissim interdum. Praesent rhoncus lorem ac semper semper. Aliquam vitae volutpat risus. Nam nec lorem ut justo dignissim interdum.' : ' Heading');
             body.appendChild(heading);
             if (depth < 5 && Math.random() > .3) {
               generateLevel(depth + 1, headingPrefix);
