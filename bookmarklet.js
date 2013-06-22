@@ -1,6 +1,6 @@
 (function() {
   /*____BEGIN_OPTIONS____*/
-  var numbering = 0001, linkColor = '', clickOutside = true, showDetails = false, highlighting = false;
+  var numbering = 0001, linkColor = '', clickOutside = true, showDetails = false, highlighting = true, closeOnEsc = true;
   /*_____END_OPTIONS_____*/
 
   /*_____BEGIN_CSS_____*/
@@ -137,20 +137,35 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
     CSSRules.push("#h5o-inside>ol>li{margin-left:0;}");
   /*_____END_CSS_____*/
 
+  /* DD1 */ var runId = Math.floor(Math.random() * 1000);
+  /* DD1 */ console.log(runId, 'started');
+
+  var toDispose = [];
+
   // This must be global so that event listener can be removed when clicking on bookmarklet again
-  if (!window.h5o_sdWoNJpsAgQGAaf)
+  if (!window.h5o_sdWoNJpsAgQGAaf) {
     window.h5o_sdWoNJpsAgQGAaf = function() {
-      document.removeEventListener("click", h5o_sdWoNJpsAgQGAaf, false);
       document.body.removeChild(document.getElementById("h5o-outside"));
-      tocItems = null;
-      if (highlighting) {
-        window.removeEventListener('scroll', highlightCurrent);
+      for (var i = 0; i < toDispose.length; i++) {
+        toDispose[i].dispose();
       }
+      toDispose = null;
       window.h5o_sdWoNJpsAgQGAaf = null;
+      /* DD1 */ console.log(runId, 'h5o_sdWoNJpsAgQGAaf run');
     };
+    /* DD1 */ console.log(runId, 'h5o_sdWoNJpsAgQGAaf set');
+  }
+
+  var close = function() {
+    /* DD1 */ console.log(runId, 'closing');
+    if (window.h5o_sdWoNJpsAgQGAaf) {
+      window.h5o_sdWoNJpsAgQGAaf();
+      /* DD1 */ console.log(runId, 'closed');
+    }
+  };
 
   if (document.getElementById("h5o-outside")) {
-    h5o_sdWoNJpsAgQGAaf();
+    close();
     return;
   }
 
@@ -173,10 +188,39 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
   inside.id = "h5o-inside";
 
   if (clickOutside) {
-    inside.addEventListener("click", function(event) {
-      event.stopPropagation();
-    }, false);
-    document.addEventListener("click", h5o_sdWoNJpsAgQGAaf, false);
+    toDispose.push((function() {
+      inside.addEventListener("click", function(event) {
+        event.stopPropagation();
+      }, false);
+      document.addEventListener("click", close, false);
+      /* DD1 */ console.log(runId, 'clickOutside hooked');
+      return {
+        dispose: function() {
+          document.removeEventListener("click", close, false);
+          /* DD1 */ console.log(runId, 'clickOutside disposed');
+        }
+      };
+    })());
+  }
+
+  if (closeOnEsc) {
+    toDispose.push((function() {
+      var hook = function(e) {
+        if (e.keyCode === 27) {
+          setTimeout(function() {
+            close();
+          }, 100);
+        }
+      };
+      document.addEventListener("keyup", hook, true);
+      /* DD1 */ console.log(runId, 'closeOnEsc hooked');
+      return {
+        dispose: function() {
+          document.removeEventListener('keyup', hook, true);
+          /* DD1 */ console.log(runId, 'closeOnEsc disposed');
+        }
+      };
+    })());
   }
 
   var tocItems = [];
@@ -539,64 +583,72 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
   }
 
   if (highlighting) {
-    var getOffsetTop = function(e) {
-      var top = 0;
-      for (; e && e !== inside; e = e.offsetParent) {
-        top += e.offsetTop;
-      }
-      return top;
-    };
-
-    var scrollIntoViewIfNeeded = function(ti) {
-      var offset = 40;
-      // The top comes from the li, the bottom from the marker.
-      // We recompute them each time, as they could change due to zooming or (potential) wrapping.
-      var top = getOffsetTop(ti.li);
-      var bottom = top + ti.marker.offsetTop + ti.marker.offsetHeight;  // The marker is the offsetChild of the li.
-
-      if (top < inside.scrollTop + offset) {
-        inside.scrollTop = top - offset;
-      } else if (bottom > inside.scrollTop + inside.clientHeight - offset) {
-        inside.scrollTop = bottom - inside.clientHeight + offset;
-      }
-    };
-
-    var current = null;
-
-    var highlightCurrent = function() {
-      var tis = tocItems;
-      if (!tis) {
-        return;
-      }
-
-      var newCurrent = null;
-
-      // We search for the last item which has a top (viewport) coordinate near to 0.
-      // As the tocItems array is (should be) in ascending order, the search goes in negative direction, stopping at the first hit.
-      for (var i = tis.length - 1; i >= 0; i--) {
-        var pos = tis[i].node.getBoundingClientRect().top;
-        if (pos < 5) {
-          newCurrent = tis[i];
-          break;
+    toDispose.push((function() {
+      var getOffsetTop = function(e) {
+        var top = 0;
+        for (; e && e !== inside; e = e.offsetParent) {
+          top += e.offsetTop;
         }
-      }
+        return top;
+      };
 
-      if (newCurrent !== current) {
-        if (current !== null) {
-          current.li.className = '';
+      var scrollIntoViewIfNeeded = function(ti) {
+        var offset = 40;
+        // The top comes from the li, the bottom from the marker.
+        // We recompute them each time, as they could change due to zooming or (potential) wrapping.
+        var top = getOffsetTop(ti.li);
+        var bottom = top + ti.marker.offsetTop + ti.marker.offsetHeight;  // The marker is the offsetChild of the li.
+
+        if (top < inside.scrollTop + offset) {
+          inside.scrollTop = top - offset;
+        } else if (bottom > inside.scrollTop + inside.clientHeight - offset) {
+          inside.scrollTop = bottom - inside.clientHeight + offset;
         }
-        current = newCurrent;
-        if (current !== null) {
-          current.li.className = 'current';
-          scrollIntoViewIfNeeded(current);
+      };
+
+      var current = null;
+
+      var highlightCurrent = function() {
+        var tis = tocItems;
+        if (!tis) {
+          return;
         }
-      }
-    };
 
-    highlightCurrent();
+        var newCurrent = null;
 
-    window.addEventListener('scroll', highlightCurrent);
+        // We search for the last item which has a top (viewport) coordinate near to 0.
+        // As the tocItems array is (should be) in ascending order, the search goes in negative direction, stopping at the first hit.
+        for (var i = tis.length - 1; i >= 0; i--) {
+          var pos = tis[i].node.getBoundingClientRect().top;
+          if (pos < 5) {
+            newCurrent = tis[i];
+            break;
+          }
+        }
+
+        if (newCurrent !== current) {
+          if (current !== null) {
+            current.li.className = '';
+          }
+          current = newCurrent;
+          if (current !== null) {
+            current.li.className = 'current';
+            scrollIntoViewIfNeeded(current);
+          }
+        }
+      };
+
+      highlightCurrent();
+      document.addEventListener('scroll', highlightCurrent, false);
+      /* DD1 */ console.log(runId, 'highlighter hooked');
+
+      return {
+        dispose: function() {
+          document.removeEventListener('scroll', highlightCurrent, false);
+          /* DD1 */ console.log(runId, 'highlighter disposed');
+        }
+      };
+    })());
   }
-
 })();
 
