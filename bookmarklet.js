@@ -1,6 +1,6 @@
 (function() {
   /*____BEGIN_OPTIONS____*/
-  var numbering = 0001, linkColor = '', clickOutside = true, showDetails = false, highlighting = true, closeOnEsc = true;
+  var numbering = 0001, linkColor = '', clickOutside = true, showDetails = false, highlighting = true, closeOnEsc = true, hotkey = true;
   /*_____END_OPTIONS_____*/
 
   /*_____BEGIN_CSS_____*/
@@ -137,518 +137,556 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
     CSSRules.push("#h5o-inside>ol>li{margin-left:0;}");
   /*_____END_CSS_____*/
 
-  /* DD1 */ var runId = Math.floor(Math.random() * 1000);
-  /* DD1 */ console.log(runId, 'started');
+  var main = function() {
 
-  var toDispose = [];
+    /* DD1 */ var runId = Math.floor(Math.random() * 1000);
+    /* DD1 */ console.log(runId, 'started');
 
-  // This must be global so that event listener can be removed when clicking on bookmarklet again
-  if (!window.h5o_sdWoNJpsAgQGAaf) {
-    window.h5o_sdWoNJpsAgQGAaf = function() {
-      document.body.removeChild(document.getElementById("h5o-outside"));
-      for (var i = 0; i < toDispose.length; i++) {
-        toDispose[i].dispose();
+    var toDispose = [];
+
+    // This must be global so that event listener can be removed when clicking on bookmarklet again
+    if (!window.h5o_sdWoNJpsAgQGAaf) {
+      window.h5o_sdWoNJpsAgQGAaf = function() {
+        document.body.removeChild(document.getElementById("h5o-outside"));
+        for (var i = 0; i < toDispose.length; i++) {
+          toDispose[i].dispose();
+        }
+        toDispose = null;
+        window.h5o_sdWoNJpsAgQGAaf = null;
+        /* DD1 */ console.log(runId, 'h5o_sdWoNJpsAgQGAaf completed');
+      };
+      /* DD1 */ console.log(runId, 'h5o_sdWoNJpsAgQGAaf set');
+    }
+
+    var close = function() {
+      /* DD1 */ console.log(runId, 'closing');
+      if (window.h5o_sdWoNJpsAgQGAaf) {
+        window.h5o_sdWoNJpsAgQGAaf();
+        /* DD1 */ console.log(runId, 'closed');
       }
-      toDispose = null;
-      window.h5o_sdWoNJpsAgQGAaf = null;
-      /* DD1 */ console.log(runId, 'h5o_sdWoNJpsAgQGAaf run');
     };
-    /* DD1 */ console.log(runId, 'h5o_sdWoNJpsAgQGAaf set');
-  }
 
-  var close = function() {
-    /* DD1 */ console.log(runId, 'closing');
-    if (window.h5o_sdWoNJpsAgQGAaf) {
-      window.h5o_sdWoNJpsAgQGAaf();
-      /* DD1 */ console.log(runId, 'closed');
+    if (document.getElementById("h5o-outside")) {
+      close();
+      return;
+    }
+
+    var toc = document.createElement("div");
+    toc.id = "h5o-outside";
+
+    // Stylesheet
+    var style = document.createElement("style");
+    toc.appendChild(style);
+    document.body.appendChild(toc);
+
+    for (var i = 0; i < CSSRules.length; i++) {
+      try {
+        style.sheet.insertRule(CSSRules[i].replace(/;(?!base64)/g, " !important;"), i);
+      } catch (e) {
+      }
+    }
+
+    var inside = document.createElement("div");
+    inside.id = "h5o-inside";
+
+    if (clickOutside) {
+      toDispose.push((function() {
+        inside.addEventListener("click", function(event) {
+          event.stopPropagation();
+        }, false);
+        document.addEventListener("click", close, false);
+        /* DD1 */ console.log(runId, 'clickOutside hooked');
+        return {
+          dispose: function() {
+            document.removeEventListener("click", close, false);
+            /* DD1 */ console.log(runId, 'clickOutside disposed');
+          }
+        };
+      })());
+    }
+
+    if (closeOnEsc) {
+      toDispose.push((function() {
+        var hook = function(e) {
+          if (e.keyCode === 27) {
+            setTimeout(function() {
+              close();
+            }, 100);
+          }
+        };
+        document.addEventListener("keyup", hook, true);
+        /* DD1 */ console.log(runId, 'closeOnEsc hooked');
+        return {
+          dispose: function() {
+            document.removeEventListener('keyup', hook, true);
+            /* DD1 */ console.log(runId, 'closeOnEsc disposed');
+          }
+        };
+      })());
+    }
+
+    var tocItems = [];
+
+    // Create outline
+    HTMLOutline(document.body);
+    if (!document.body.sectionList)
+      return; // HTML4 frameset documents
+    inside.appendChild(printOutline(document.body.sectionList));
+    toc.appendChild(inside);
+
+
+    function printOutline(outline) {
+      var ol = document.createElement("ol");
+      for (var i = 0; i < outline.length; i++) {
+        ol.appendChild(printSection(outline[i]));
+      }
+      return ol;
+    }
+
+    function printSection(section) {
+      var li = document.createElement("li");
+      var title = document.createElement("a");
+      li.appendChild(title);
+
+      if (section.heading === null || /^[ \r\n\t]*$/.test(section.heading.text)) {
+        li.className = "h5o-notitle";
+        switch (section.associatedNodes[0].nodeName.toLowerCase()) {
+          case "body":
+            title.textContent = "Document";
+            break;
+          case "article":
+            title.textContent = "Article";
+            break;
+          case "aside":
+            title.textContent = "Aside";
+            break;
+          case "nav":
+            title.textContent = "Navigation";
+            break;
+          case "section":
+            title.textContent = "Section";
+            break;
+          default:
+            title.textContent = "Empty title";
+        }
+      } else
+        title.textContent = section.heading.text;
+
+      var node = section.associatedNodes[0];
+      if (node.sectionType !== 1 && node.sectionType !== 2)
+        node = section.heading;
+      title.href = "#" + node.id;
+
+      title.addEventListener("click", function(event) {
+        event.preventDefault();
+        node.scrollIntoView();
+      }, false);
+
+      if (showDetails) {
+        var details = "";
+        if (section.associatedNodes[0].sectionType)
+          details += "<" + section.associatedNodes[0].nodeName.toLowerCase() + ">, ";
+        if (section.heading)
+          details += "rank:−" + (-section.heading.rank) + ", depth:" + section.heading.depth + ", ";
+        details += "#nodes:" + section.associatedNodes.length;
+        title.title = details;
+      }
+
+      var marker = document.createElement('span');
+      marker.className = 'marker';
+      li.appendChild(marker);
+
+      tocItems.push({node: node, li: li, marker: marker});
+      li.appendChild(printOutline(section.childSections));
+      return li;
+    }
+
+    // Section class
+    function Section() {
+      this.parentSection = null;
+      this.childSections = [];
+      this.firstChild = null;
+      this.lastChild = null;
+      this.appendChild = function(section) {
+        section.parentSection = this;
+        this.childSections.push(section);
+        if (this.firstChild === null)
+          this.firstChild = section;
+        this.lastChild = section;
+      };
+
+      this.heading = null; // heading element associated with the section, if any
+
+      this.associatedNodes = []; // DOM nodes associated with the section
+    }
+
+    // Main function
+    function HTMLOutline(root) {
+
+      // BEGIN OUTLINE ALGORITHM
+      // STEP 1
+      var currentOutlinee = null; // element whose outline is being created
+      // STEP 2
+      var currentSection = null; // current section
+
+      // STEP 3
+      // Minimal stack object
+      var stack = {"lastIndex": -1};
+      stack.isEmpty = function() {
+        return stack.lastIndex === -1;
+      };
+      stack.push = function(e) {
+        stack[++stack.lastIndex] = e;
+        stack.top = e;
+      };
+      stack.pop = function() {
+        var e = stack.top;
+        delete stack[stack.lastIndex--];
+        stack.top = stack[stack.lastIndex];
+        return e;
+      };
+
+      // STEP 4 (minus DOM walk which is at the end)
+      function enter(node) {
+        if (isElement(node)) {
+          if (!stack.isEmpty() && (isHeadingElement(stack.top) || isHidden(stack.top))) {
+            // Do nothing
+          } else if (isHidden(node)) {
+            stack.push(node);
+          } else if (isSectioningContentElement(node) || isSectioningRootElement(node)) {
+            // if(currentOutlinee !== null && currentSection.heading === null) {
+            // Create implied heading
+            // }
+            if (currentOutlinee !== null)
+              stack.push(currentOutlinee);
+            currentOutlinee = node;
+            currentSection = new Section();
+            associateNodeWithSection(currentOutlinee, currentSection);
+            currentOutlinee.appendSection(currentSection);
+          } else if (currentOutlinee === null) {
+            // Do nothing
+          } else if (isHeadingElement(node)) {
+            if (currentSection.heading === null)
+              currentSection.heading = node;
+            else if (currentOutlinee.lastSection.heading === null || node.rank >= currentOutlinee.lastSection.heading.rank) {
+              currentSection = new Section();
+              currentSection.heading = node;
+              currentOutlinee.appendSection(currentSection);
+            } else {
+              var candidateSection = currentSection;
+              do {
+                if (node.rank < candidateSection.heading.rank) {
+                  currentSection = new Section();
+                  currentSection.heading = node;
+                  candidateSection.appendChild(currentSection);
+                  break;
+                }
+                var newCandidate = candidateSection.parentSection;
+                candidateSection = newCandidate;
+              } while (true);
+            }
+            stack.push(node);
+          } // else {
+          // Do nothing
+          // }
+        }
+      }
+
+      function exit(node) {
+        if (isElement(node)) {
+          if (!stack.isEmpty() && node === stack.top)
+            stack.pop();
+          else if (!stack.isEmpty() && (isHeadingElement(stack.top) || isHidden(stack.top))) {
+            // Do nothing
+          } else if (!stack.isEmpty() && isSectioningContentElement(node)) {
+            // if(currentSection.heading === null) {
+            // Create implied heading
+            // }
+            currentOutlinee = stack.pop();
+            currentSection = currentOutlinee.lastSection;
+            for (var i = 0; i < node.sectionList.length; i++) {
+              currentSection.appendChild(node.sectionList[i]);
+            }
+          } else if (!stack.isEmpty() && isSectioningRootElement(node)) {
+            // if(currentSection.heading === null) {
+            // Create implied heading
+            // }
+            currentOutlinee = stack.pop();
+            currentSection = currentOutlinee.lastSection;
+            while (currentSection.childSections.length > 0) {
+              currentSection = currentSection.lastChild;
+            }
+          } else if (isSectioningContentElement(node) || isSectioningRootElement(node)) {
+            // if(currentSection.heading === null) {
+            // Create implied heading
+            // }
+            // The algorith says to end the walk here, but that's assuming root is a sectioning element
+            // Instead we reset the algorithm for subsequent top-level sectioning elements
+            currentOutlinee = null;
+            currentSection = null;
+          } // else {
+          // Do nothing
+          // }
+        }
+        if (node.associatedSection === null && currentSection !== null)
+          associateNodeWithSection(node, currentSection);
+      }
+
+      // STEP 5
+      // The heading associated to node is node.associatedSection.heading, if any
+      // END OUTLINE ALGORITHM
+
+      // Now we must make the necessary definitions for the above to make sense
+      function associateNodeWithSection(node, section) {
+        section.associatedNodes.push(node);
+        node.associatedSection = section;
+      }
+
+      function isElement(node) {
+        return node.nodeType === 1;
+      }
+
+      function isHidden(node) {
+        return node.hidden;
+      }
+
+      function isSectioningContentElement(node) {
+        return node.sectionType === 1;
+      }
+
+      function isSectioningRootElement(node) {
+        return node.sectionType === 2;
+      }
+
+      function isHeadingElement(node) {
+        return node.rank !== undefined;
+      }
+
+      function extend(node) {
+        if (node.nodeType === 1) {
+          switch (node.nodeName.toLowerCase()) {
+            case "blockquote":
+            case "body":
+            case "details":
+            case "fieldset":
+            case "figure":
+            case "td":
+              extendSectioningRootElement(node);
+              break;
+            case "article":
+            case "aside":
+            case "nav":
+            case "section":
+              extendSectioningContentElement(node);
+              break;
+            case "h1":
+            case "h2":
+            case "h3":
+            case "h4":
+            case "h5":
+            case "h6":
+              extendHeadingElement(node);
+              break;
+            case "hgroup":
+              extendHeadingGroupElement(node);
+              break;
+            default:
+              extendNode(node);
+          }
+        } else
+          extendNode(node);
+      }
+
+      function extendNode(node) {
+        node.associatedSection = null;
+      }
+
+      function extendSectioningElement(node) {
+        extendNode(node);
+        node.sectionList = [];
+        node.firstSection = null;
+        node.lastSection = null;
+
+        node.appendSection = function(section) {
+          this.sectionList.push(section);
+          if (this.firstSection === null)
+            this.firstSection = section;
+          this.lastSection = section;
+        };
+      }
+
+      function extendSectioningContentElement(node) {
+        extendSectioningElement(node);
+        node.sectionType = 1;
+      }
+
+      function extendSectioningRootElement(node) {
+        extendSectioningElement(node);
+        node.sectionType = 2;
+      }
+
+      function extendHeadingContentElement(node) {
+        extendNode(node);
+        Object.defineProperty(node, "depth", {"get": function() {
+            var section = node.associatedSection;
+            var depth = 1;
+            if (section !== null) {
+              while (section = section.parentSection)
+                ++depth;
+            }
+            return depth;
+          }, "configurable": true, "enumerable": true});
+      }
+
+      function extendHeadingElement(node) {
+        extendHeadingContentElement(node);
+        node.rank = -parseInt(node.nodeName.charAt(1));
+        node.text = node.textContent;
+      }
+
+      function extendHeadingGroupElement(node) {
+        extendHeadingContentElement(node);
+
+        for (var i = 1; i <= 6; i++) {
+          var h = node.getElementsByTagName("h" + i);
+          if (h.length > 0) {
+            node.rank = -i;
+            node.text = h[0].textContent;
+            break;
+          }
+        }
+
+        if (node.rank === undefined) {
+          node.rank = -1;
+          node.text = "";
+        }
+      }
+
+      // Walk the DOM subtree of root
+      var node = root;
+      start: while (node) {
+        extend(node);
+        enter(node);
+        if (node.firstChild) {
+          node = node.firstChild;
+          continue start;
+        }
+        while (node) {
+          exit(node);
+          if (node === root)
+            break start;
+          if (node.nextSibling) {
+            node = node.nextSibling;
+            continue start;
+          }
+          node = node.parentNode;
+        }
+      }
+    }
+
+    if (highlighting) {
+      toDispose.push((function() {
+        var getOffsetTop = function(e) {
+          var top = 0;
+          for (; e && e !== inside; e = e.offsetParent) {
+            top += e.offsetTop;
+          }
+          return top;
+        };
+
+        var scrollIntoViewIfNeeded = function(ti) {
+          var offset = 40;
+          // The top comes from the li, the bottom from the marker.
+          // We recompute them each time, as they could change due to zooming or (potential) wrapping.
+          var top = getOffsetTop(ti.li);
+          var bottom = top + ti.marker.offsetTop + ti.marker.offsetHeight;  // The marker is the offsetChild of the li.
+
+          if (top < inside.scrollTop + offset) {
+            inside.scrollTop = top - offset;
+          } else if (bottom > inside.scrollTop + inside.clientHeight - offset) {
+            inside.scrollTop = bottom - inside.clientHeight + offset;
+          }
+        };
+
+        var current = null;
+
+        var highlightCurrent = function() {
+          var tis = tocItems;
+          if (!tis) {
+            return;
+          }
+
+          var newCurrent = null;
+
+          // We search for the last item which has a top (viewport) coordinate near to 0.
+          // As the tocItems array is (should be) in ascending order, the search goes in negative direction, stopping at the first hit.
+          for (var i = tis.length - 1; i >= 0; i--) {
+            var pos = tis[i].node.getBoundingClientRect().top;
+            if (pos < 5) {
+              newCurrent = tis[i];
+              break;
+            }
+          }
+
+          if (newCurrent !== current) {
+            if (current !== null) {
+              current.li.className = '';
+            }
+            current = newCurrent;
+            if (current !== null) {
+              current.li.className = 'current';
+              scrollIntoViewIfNeeded(current);
+            }
+          }
+        };
+
+        highlightCurrent();
+        document.addEventListener('scroll', highlightCurrent, false);
+        /* DD1 */ console.log(runId, 'highlighter hooked');
+
+        return {
+          dispose: function() {
+            document.removeEventListener('scroll', highlightCurrent, false);
+            /* DD1 */ console.log(runId, 'highlighter disposed');
+          }
+        };
+      })());
     }
   };
 
-  if (document.getElementById("h5o-outside")) {
-    close();
+  // global variable to store the previously hooked instance (if any)
+  if (window.h5o_of2wUqMdTcBZEq) {
+    // already registered to a hotkey, run the previous instance
+    /* DD1 */ console.log('previous instance called');
+    window.h5o_of2wUqMdTcBZEq();
     return;
   }
 
-  var toc = document.createElement("div");
-  toc.id = "h5o-outside";
+  if (hotkey) {
+    // register hotkey and store the main function into the global variable
+    (function() {
+      var code = typeof hotkey === 'number' ? hotkey : 5199; // default: Ctrl-Alt-O
+      var keyCode = code & 1023;
+      var ctrlKey = (code & 1024) !== 0;
+      var shiftKey = (code & 2048) !== 0;
+      var altKey = (code & 4096) !== 0;
 
-  // Stylesheet
-  var style = document.createElement("style");
-  toc.appendChild(style);
-  document.body.appendChild(toc);
-
-  for (var i = 0; i < CSSRules.length; i++) {
-    try {
-      style.sheet.insertRule(CSSRules[i].replace(/;(?!base64)/g, " !important;"), i);
-    } catch (e) {
-    }
-  }
-
-  var inside = document.createElement("div");
-  inside.id = "h5o-inside";
-
-  if (clickOutside) {
-    toDispose.push((function() {
-      inside.addEventListener("click", function(event) {
-        event.stopPropagation();
-      }, false);
-      document.addEventListener("click", close, false);
-      /* DD1 */ console.log(runId, 'clickOutside hooked');
-      return {
-        dispose: function() {
-          document.removeEventListener("click", close, false);
-          /* DD1 */ console.log(runId, 'clickOutside disposed');
-        }
-      };
-    })());
-  }
-
-  if (closeOnEsc) {
-    toDispose.push((function() {
       var hook = function(e) {
-        if (e.keyCode === 27) {
-          setTimeout(function() {
-            close();
-          }, 100);
+        e = window.event || e;
+        if (e.keyCode === keyCode && e.ctrlKey === ctrlKey && e.shiftKey === shiftKey && e.altKey === altKey) {
+          e.preventDefault();
+          e.stopPropagation();
+          /* DD1 */ console.log('hotkey pressed');
+          main();
         }
       };
-      document.addEventListener("keyup", hook, true);
-      /* DD1 */ console.log(runId, 'closeOnEsc hooked');
-      return {
-        dispose: function() {
-          document.removeEventListener('keyup', hook, true);
-          /* DD1 */ console.log(runId, 'closeOnEsc disposed');
-        }
-      };
-    })());
+      document.addEventListener("keydown", hook, true);
+      /* DD1 */ console.log('global hotkey hooked');
+    })();
+    window.h5o_of2wUqMdTcBZEq = main;
   }
 
-  var tocItems = [];
-
-  // Create outline
-  HTMLOutline(document.body);
-  if (!document.body.sectionList)
-    return; // HTML4 frameset documents
-  inside.appendChild(printOutline(document.body.sectionList));
-  toc.appendChild(inside);
-
-
-  function printOutline(outline) {
-    var ol = document.createElement("ol");
-    for (var i = 0; i < outline.length; i++) {
-      ol.appendChild(printSection(outline[i]));
-    }
-    return ol;
-  }
-
-  function printSection(section) {
-    var li = document.createElement("li");
-    var title = document.createElement("a");
-    li.appendChild(title);
-
-    if (section.heading === null || /^[ \r\n\t]*$/.test(section.heading.text)) {
-      li.className = "h5o-notitle";
-      switch (section.associatedNodes[0].nodeName.toLowerCase()) {
-        case "body":
-          title.textContent = "Document";
-          break;
-        case "article":
-          title.textContent = "Article";
-          break;
-        case "aside":
-          title.textContent = "Aside";
-          break;
-        case "nav":
-          title.textContent = "Navigation";
-          break;
-        case "section":
-          title.textContent = "Section";
-          break;
-        default:
-          title.textContent = "Empty title";
-      }
-    } else
-      title.textContent = section.heading.text;
-
-    var node = section.associatedNodes[0];
-    if (node.sectionType !== 1 && node.sectionType !== 2)
-      node = section.heading;
-    title.href = "#" + node.id;
-
-    title.addEventListener("click", function(event) {
-      event.preventDefault();
-      node.scrollIntoView();
-    }, false);
-
-    if (showDetails) {
-      var details = "";
-      if (section.associatedNodes[0].sectionType)
-        details += "<" + section.associatedNodes[0].nodeName.toLowerCase() + ">, ";
-      if (section.heading)
-        details += "rank:−" + (-section.heading.rank) + ", depth:" + section.heading.depth + ", ";
-      details += "#nodes:" + section.associatedNodes.length;
-      title.title = details;
-    }
-
-    var marker = document.createElement('span');
-    marker.className = 'marker';
-    li.appendChild(marker);
-
-    tocItems.push({node: node, li: li, marker: marker});
-    li.appendChild(printOutline(section.childSections));
-    return li;
-  }
-
-  // Section class
-  function Section() {
-    this.parentSection = null;
-    this.childSections = [];
-    this.firstChild = null;
-    this.lastChild = null;
-    this.appendChild = function(section) {
-      section.parentSection = this;
-      this.childSections.push(section);
-      if (this.firstChild === null)
-        this.firstChild = section;
-      this.lastChild = section;
-    };
-
-    this.heading = null; // heading element associated with the section, if any
-
-    this.associatedNodes = []; // DOM nodes associated with the section
-  }
-
-  // Main function
-  function HTMLOutline(root) {
-
-    // BEGIN OUTLINE ALGORITHM
-    // STEP 1
-    var currentOutlinee = null; // element whose outline is being created
-    // STEP 2
-    var currentSection = null; // current section
-
-    // STEP 3
-    // Minimal stack object
-    var stack = {"lastIndex": -1};
-    stack.isEmpty = function() {
-      return stack.lastIndex === -1;
-    };
-    stack.push = function(e) {
-      stack[++stack.lastIndex] = e;
-      stack.top = e;
-    };
-    stack.pop = function() {
-      var e = stack.top;
-      delete stack[stack.lastIndex--];
-      stack.top = stack[stack.lastIndex];
-      return e;
-    };
-
-    // STEP 4 (minus DOM walk which is at the end)
-    function enter(node) {
-      if (isElement(node)) {
-        if (!stack.isEmpty() && (isHeadingElement(stack.top) || isHidden(stack.top))) {
-          // Do nothing
-        } else if (isHidden(node)) {
-          stack.push(node);
-        } else if (isSectioningContentElement(node) || isSectioningRootElement(node)) {
-          // if(currentOutlinee !== null && currentSection.heading === null) {
-          // Create implied heading
-          // }
-          if (currentOutlinee !== null)
-            stack.push(currentOutlinee);
-          currentOutlinee = node;
-          currentSection = new Section();
-          associateNodeWithSection(currentOutlinee, currentSection);
-          currentOutlinee.appendSection(currentSection);
-        } else if (currentOutlinee === null) {
-          // Do nothing
-        } else if (isHeadingElement(node)) {
-          if (currentSection.heading === null)
-            currentSection.heading = node;
-          else if (currentOutlinee.lastSection.heading === null || node.rank >= currentOutlinee.lastSection.heading.rank) {
-            currentSection = new Section();
-            currentSection.heading = node;
-            currentOutlinee.appendSection(currentSection);
-          } else {
-            var candidateSection = currentSection;
-            do {
-              if (node.rank < candidateSection.heading.rank) {
-                currentSection = new Section();
-                currentSection.heading = node;
-                candidateSection.appendChild(currentSection);
-                break;
-              }
-              var newCandidate = candidateSection.parentSection;
-              candidateSection = newCandidate;
-            } while (true);
-          }
-          stack.push(node);
-        } // else {
-        // Do nothing
-        // }
-      }
-    }
-
-    function exit(node) {
-      if (isElement(node)) {
-        if (!stack.isEmpty() && node === stack.top)
-          stack.pop();
-        else if (!stack.isEmpty() && (isHeadingElement(stack.top) || isHidden(stack.top))) {
-          // Do nothing
-        } else if (!stack.isEmpty() && isSectioningContentElement(node)) {
-          // if(currentSection.heading === null) {
-          // Create implied heading
-          // }
-          currentOutlinee = stack.pop();
-          currentSection = currentOutlinee.lastSection;
-          for (var i = 0; i < node.sectionList.length; i++) {
-            currentSection.appendChild(node.sectionList[i]);
-          }
-        } else if (!stack.isEmpty() && isSectioningRootElement(node)) {
-          // if(currentSection.heading === null) {
-          // Create implied heading
-          // }
-          currentOutlinee = stack.pop();
-          currentSection = currentOutlinee.lastSection;
-          while (currentSection.childSections.length > 0) {
-            currentSection = currentSection.lastChild;
-          }
-        } else if (isSectioningContentElement(node) || isSectioningRootElement(node)) {
-          // if(currentSection.heading === null) {
-          // Create implied heading
-          // }
-          // The algorith says to end the walk here, but that's assuming root is a sectioning element
-          // Instead we reset the algorithm for subsequent top-level sectioning elements
-          currentOutlinee = null;
-          currentSection = null;
-        } // else {
-        // Do nothing
-        // }
-      }
-      if (node.associatedSection === null && currentSection !== null)
-        associateNodeWithSection(node, currentSection);
-    }
-
-    // STEP 5
-    // The heading associated to node is node.associatedSection.heading, if any
-    // END OUTLINE ALGORITHM
-
-    // Now we must make the necessary definitions for the above to make sense
-    function associateNodeWithSection(node, section) {
-      section.associatedNodes.push(node);
-      node.associatedSection = section;
-    }
-
-    function isElement(node) {
-      return node.nodeType === 1;
-    }
-
-    function isHidden(node) {
-      return node.hidden;
-    }
-
-    function isSectioningContentElement(node) {
-      return node.sectionType === 1;
-    }
-
-    function isSectioningRootElement(node) {
-      return node.sectionType === 2;
-    }
-
-    function isHeadingElement(node) {
-      return node.rank !== undefined;
-    }
-
-    function extend(node) {
-      if (node.nodeType === 1) {
-        switch (node.nodeName.toLowerCase()) {
-          case "blockquote":
-          case "body":
-          case "details":
-          case "fieldset":
-          case "figure":
-          case "td":
-            extendSectioningRootElement(node);
-            break;
-          case "article":
-          case "aside":
-          case "nav":
-          case "section":
-            extendSectioningContentElement(node);
-            break;
-          case "h1":
-          case "h2":
-          case "h3":
-          case "h4":
-          case "h5":
-          case "h6":
-            extendHeadingElement(node);
-            break;
-          case "hgroup":
-            extendHeadingGroupElement(node);
-            break;
-          default:
-            extendNode(node);
-        }
-      } else
-        extendNode(node);
-    }
-
-    function extendNode(node) {
-      node.associatedSection = null;
-    }
-
-    function extendSectioningElement(node) {
-      extendNode(node);
-      node.sectionList = [];
-      node.firstSection = null;
-      node.lastSection = null;
-
-      node.appendSection = function(section) {
-        this.sectionList.push(section);
-        if (this.firstSection === null)
-          this.firstSection = section;
-        this.lastSection = section;
-      };
-    }
-
-    function extendSectioningContentElement(node) {
-      extendSectioningElement(node);
-      node.sectionType = 1;
-    }
-
-    function extendSectioningRootElement(node) {
-      extendSectioningElement(node);
-      node.sectionType = 2;
-    }
-
-    function extendHeadingContentElement(node) {
-      extendNode(node);
-      Object.defineProperty(node, "depth", {"get": function() {
-          var section = node.associatedSection;
-          var depth = 1;
-          if (section !== null) {
-            while (section = section.parentSection)
-              ++depth;
-          }
-          return depth;
-        }, "configurable": true, "enumerable": true});
-    }
-
-    function extendHeadingElement(node) {
-      extendHeadingContentElement(node);
-      node.rank = -parseInt(node.nodeName.charAt(1));
-      node.text = node.textContent;
-    }
-
-    function extendHeadingGroupElement(node) {
-      extendHeadingContentElement(node);
-
-      for (var i = 1; i <= 6; i++) {
-        var h = node.getElementsByTagName("h" + i);
-        if (h.length > 0) {
-          node.rank = -i;
-          node.text = h[0].textContent;
-          break;
-        }
-      }
-
-      if (node.rank === undefined) {
-        node.rank = -1;
-        node.text = "";
-      }
-    }
-
-    // Walk the DOM subtree of root
-    var node = root;
-    start: while (node) {
-      extend(node);
-      enter(node);
-      if (node.firstChild) {
-        node = node.firstChild;
-        continue start;
-      }
-      while (node) {
-        exit(node);
-        if (node === root)
-          break start;
-        if (node.nextSibling) {
-          node = node.nextSibling;
-          continue start;
-        }
-        node = node.parentNode;
-      }
-    }
-  }
-
-  if (highlighting) {
-    toDispose.push((function() {
-      var getOffsetTop = function(e) {
-        var top = 0;
-        for (; e && e !== inside; e = e.offsetParent) {
-          top += e.offsetTop;
-        }
-        return top;
-      };
-
-      var scrollIntoViewIfNeeded = function(ti) {
-        var offset = 40;
-        // The top comes from the li, the bottom from the marker.
-        // We recompute them each time, as they could change due to zooming or (potential) wrapping.
-        var top = getOffsetTop(ti.li);
-        var bottom = top + ti.marker.offsetTop + ti.marker.offsetHeight;  // The marker is the offsetChild of the li.
-
-        if (top < inside.scrollTop + offset) {
-          inside.scrollTop = top - offset;
-        } else if (bottom > inside.scrollTop + inside.clientHeight - offset) {
-          inside.scrollTop = bottom - inside.clientHeight + offset;
-        }
-      };
-
-      var current = null;
-
-      var highlightCurrent = function() {
-        var tis = tocItems;
-        if (!tis) {
-          return;
-        }
-
-        var newCurrent = null;
-
-        // We search for the last item which has a top (viewport) coordinate near to 0.
-        // As the tocItems array is (should be) in ascending order, the search goes in negative direction, stopping at the first hit.
-        for (var i = tis.length - 1; i >= 0; i--) {
-          var pos = tis[i].node.getBoundingClientRect().top;
-          if (pos < 5) {
-            newCurrent = tis[i];
-            break;
-          }
-        }
-
-        if (newCurrent !== current) {
-          if (current !== null) {
-            current.li.className = '';
-          }
-          current = newCurrent;
-          if (current !== null) {
-            current.li.className = 'current';
-            scrollIntoViewIfNeeded(current);
-          }
-        }
-      };
-
-      highlightCurrent();
-      document.addEventListener('scroll', highlightCurrent, false);
-      /* DD1 */ console.log(runId, 'highlighter hooked');
-
-      return {
-        dispose: function() {
-          document.removeEventListener('scroll', highlightCurrent, false);
-          /* DD1 */ console.log(runId, 'highlighter disposed');
-        }
-      };
-    })());
-  }
+  // run the routine once
+  main();
 })();
 
