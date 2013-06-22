@@ -21,6 +21,11 @@ The function `HTMLOutline` adds several properties to the nodes in the DOM subtr
 * `rank` is the [rank](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#rank) of a heading content element;
 * `depth` is the [outline depth](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#outline-depth) of a heading content element.
 
-Added by buakos:
+Added by buakos for the bookmarklet:
 
-* highlighting current item in bookmarklet.
+* live highlighting of the current item with an arrow icon (can be enabled/disabled by option `highlighting`);
+* closing on Escape (can be enabled/disabled by option `closeOnEsc`);
+* hotkey to open and close the TOC after the first run. Can be controlled by option `hotkey`:
+  * if `true`, it uses the default Ctrl-Alt-O key (code 5199);
+  * if a number, it defines the `keyCode` in the lower bits, the `ctrlKey` (1024), the `shiftKey` (2048) and the `altKey` (4096) in the upper ones;
+  * if `false`, the hotkey is disabled.
