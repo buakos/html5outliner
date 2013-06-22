@@ -599,10 +599,9 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
 
         var scrollIntoViewIfNeeded = function(ti) {
           var offset = 40;
-          // The top comes from the li, the bottom from the marker.
-          // We recompute them each time, as they could change due to zooming or (potential) wrapping.
-          var top = getOffsetTop(ti.li);
-          var bottom = top + ti.marker.offsetTop + ti.marker.offsetHeight;  // The marker is the offsetChild of the li.
+
+          var top = ti.top;
+          var bottom = ti.bottom;
 
           if (initialRun) {
             // At first run we position the element into the middle
@@ -679,6 +678,25 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
             }
           }
         };
+
+        // We precompute and store the top and bottom coordinates
+        // Although zooming and (potential) rewrapping invalidate these coordinates,
+        // but rewrapping should never occur, and after zooming the TOC can be manually revoked.
+        // The speed-up for the optimization shall outweigh the inaccuracy due to zooming.
+        (function() {
+          var tis = tocItems;
+          if (!tis || tis.length <= 0) {
+            return;
+          }
+          for (var i = 0; i < tis.length; i++) {
+            var ti = tis[i];
+            // The top comes from the li, the bottom from the marker.
+            var top = getOffsetTop(ti.li);
+            var bottom = top + ti.marker.offsetTop + ti.marker.offsetHeight;  // The marker is the offsetChild of the li.            
+            ti.top = top;
+            ti.bottom = bottom;
+          }
+        })();
 
         highlightCurrent();
         initialRun = false;
