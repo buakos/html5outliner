@@ -139,8 +139,8 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
 
   var main = function() {
 
-    /* DD1 */ var runId = Math.floor(Math.random() * 1000);
-    /* DD1 */ console.log(runId, 'started');
+    // DD1 */ var runId = Math.floor(Math.random() * 1000);
+    // DD1 */ console.log(runId, 'started');
 
     var toDispose = [];
 
@@ -153,16 +153,16 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
         }
         toDispose = null;
         window.h5o_sdWoNJpsAgQGAaf = null;
-        /* DD1 */ console.log(runId, 'h5o_sdWoNJpsAgQGAaf completed');
+        // DD1 */ console.log(runId, 'h5o_sdWoNJpsAgQGAaf completed');
       };
-      /* DD1 */ console.log(runId, 'h5o_sdWoNJpsAgQGAaf set');
+      // DD1 */ console.log(runId, 'h5o_sdWoNJpsAgQGAaf set');
     }
 
     var close = function() {
-      /* DD1 */ console.log(runId, 'closing');
+      // DD1 */ console.log(runId, 'closing');
       if (window.h5o_sdWoNJpsAgQGAaf) {
         window.h5o_sdWoNJpsAgQGAaf();
-        /* DD1 */ console.log(runId, 'closed');
+        // DD1 */ console.log(runId, 'closed');
       }
     };
 
@@ -195,11 +195,11 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
           event.stopPropagation();
         }, false);
         document.addEventListener("click", close, false);
-        /* DD1 */ console.log(runId, 'clickOutside hooked');
+        // DD1 */ console.log(runId, 'clickOutside hooked');
         return {
           dispose: function() {
             document.removeEventListener("click", close, false);
-            /* DD1 */ console.log(runId, 'clickOutside disposed');
+            // DD1 */ console.log(runId, 'clickOutside disposed');
           }
         };
       })());
@@ -215,11 +215,11 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
           }
         };
         document.addEventListener("keyup", hook, true);
-        /* DD1 */ console.log(runId, 'closeOnEsc hooked');
+        // DD1 */ console.log(runId, 'closeOnEsc hooked');
         return {
           dispose: function() {
             document.removeEventListener('keyup', hook, true);
-            /* DD1 */ console.log(runId, 'closeOnEsc disposed');
+            // DD1 */ console.log(runId, 'closeOnEsc disposed');
           }
         };
       })());
@@ -627,7 +627,7 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
           var newCurrent = null;
           var lastNegative = null;
 
-          var viewportMiddle = document.documentElement.clientHeight / 2 - 10;
+          var viewportMiddle = window.innerHeight / 2 - 10;
 
           // We assume that the nodes in the tocItems are in ascending order.
           // The current item is either:
@@ -635,7 +635,9 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
           //  - the last one above it (ie. with negative coordinates)
 
           // We loop twice from start, into negative and positive direction
-          var start = current ? current : Math.floor(tis.length / 2);
+          var start = current !== null ? current : Math.floor(tis.length / 2);
+
+          // DD2 */ console.log('highlighting', {current: current, start: start, viewportMiddle: viewportMiddle});
 
           // First loop, until the first negative position
           for (var i = start; i >= 0; i--) {
@@ -648,8 +650,10 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
             }
           }
 
+          // DD2 */ console.log('after loop #1', {newCurrent: newCurrent, lastNegative: lastNegative});
+
           // Second loop (if needed), until the first hit or beyond the middle
-          if (!newCurrent) {
+          if (newCurrent === null) {
             for (var i = start; i < tis.length; i++) {
               var pos = tis[i].node.getBoundingClientRect().top;
               if (pos < 0) {
@@ -663,9 +667,13 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
             }
           }
 
-          if (!newCurrent && lastNegative) {
+          // DD2 */ console.log('after loop #2', {newCurrent: newCurrent, lastNegative: lastNegative});
+
+          if (newCurrent === null) {
             newCurrent = lastNegative;
           }
+
+          // DD2 */ console.log('highlighted', {index: newCurrent, rect: newCurrent !== null ? tis[newCurrent].node.getBoundingClientRect() : null});
 
           if (newCurrent !== current) {
             if (current !== null) {
@@ -702,12 +710,12 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
         initialRun = false;
 
         document.addEventListener('scroll', highlightCurrent, false);
-        /* DD1 */ console.log(runId, 'highlighter hooked');
+        // DD1 */ console.log(runId, 'highlighter hooked');
 
         return {
           dispose: function() {
             document.removeEventListener('scroll', highlightCurrent, false);
-            /* DD1 */ console.log(runId, 'highlighter disposed');
+            // DD1 */ console.log(runId, 'highlighter disposed');
           }
         };
       })());
@@ -717,7 +725,7 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
   // global variable to store the previously hooked instance (if any)
   if (window.h5o_of2wUqMdTcBZEq) {
     // already registered to a hotkey, run the previous instance
-    /* DD1 */ console.log('previous instance called');
+    // DD1 */ console.log('previous instance called');
     window.h5o_of2wUqMdTcBZEq();
     return;
   }
@@ -736,12 +744,12 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
         if (e.keyCode === keyCode && e.ctrlKey === ctrlKey && e.shiftKey === shiftKey && e.altKey === altKey) {
           e.preventDefault();
           e.stopPropagation();
-          /* DD1 */ console.log('hotkey pressed');
+          // DD1 */ console.log('hotkey pressed');
           main();
         }
       };
       document.addEventListener("keydown", hook, true);
-      /* DD1 */ console.log('global hotkey hooked');
+      // DD1 */ console.log('global hotkey hooked');
     })();
     window.h5o_of2wUqMdTcBZEq = main;
   }
