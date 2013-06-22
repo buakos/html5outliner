@@ -115,7 +115,7 @@
 			height: 12px;\
 			margin-left: 5px;\
 		}",
-    "#h5o-inside li.current>span.marker{\
+    "#h5o-inside span.marker.shown{\
 			background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAMCAYAAABSgIzaAAAAAXNSR0IArs4c6QAAAAlwS\
 FlzAAALEgAACxIB0t1+/AAAAT1JREFUKM+N0s1KAnEUxuHf/MdRh0lTKCiiDwqZok0X0KZtm4hw76KuoaAbKCi6gYKCaivhBUjlFbSIXJVl+ZGZpuYMOk0L\
 s7LUevcP5/CeA20SjqVsPRS19VDUpkNEO3R8nmUlqNMt4ic6OssyHfDjUpWuUPqODk+zTAV85EybSrlOJvVC4rbYGYZjKfsgmkGf8JEx3kinqgghobpkxkY\
@@ -677,11 +677,11 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
 
           if (newCurrent !== current) {
             if (current !== null) {
-              tis[current].li.className = '';
+              tis[current].marker.className = 'marker';   // Simple approach for performance
             }
             current = newCurrent;
             if (current !== null) {
-              tis[current].li.className = 'current';
+              tis[current].marker.className = 'marker shown';   // Simple approach for performance
               scrollIntoViewIfNeeded(tis[current]);
             }
           }
