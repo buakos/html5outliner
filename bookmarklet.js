@@ -531,8 +531,9 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
             var section = node.associatedSection;
             var depth = 1;
             if (section !== null) {
-              while (section = section.parentSection)
-                ++depth;
+              for (var e = section.parentSection; e !== null; e = e.parentSection) {
+                depth++;
+              }
             }
             return depth;
           }, "configurable": true, "enumerable": true});
