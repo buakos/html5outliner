@@ -113,7 +113,6 @@
 			display: inline-block;\
 			width: 14px;\
 			height: 12px;\
-			margin-left: 5px;\
 		}",
     "#h5o-inside span.marker.shown{\
 			background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAMCAYAAABSgIzaAAAAAXNSR0IArs4c6QAAAAlwS\
@@ -292,6 +291,7 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
         title.title = details;
       }
 
+      li.appendChild(document.createTextNode('\u00a0'));  // NO-BREAK SPACE (&nbsp;)
       var marker = document.createElement('span');
       marker.className = 'marker';
       li.appendChild(marker);
