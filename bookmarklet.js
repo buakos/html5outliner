@@ -323,6 +323,50 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
     // Main function
     function HTMLOutline(root) {
 
+      var innerTextShim = (function() {
+        var sel = null;
+        var savedSelection = null;
+
+        var getInnerText = function(e) {
+          var text = e.innerText;
+          if (text) {
+            return text;
+          }
+
+          // innerText not present: try to emulate it with Selection.toString().
+          if (sel === null) {
+            sel = window.getSelection();
+          }
+          if (savedSelection === null) {
+            // current selection not saved yet, saving it
+            savedSelection = [];
+            for (var i = 0; i < sel.rangeCount; i++) {
+              savedSelection.push(sel.getRangeAt(i));
+            }
+          }
+          sel.selectAllChildren(e);
+          text = sel.toString();
+
+          return text;
+        };
+
+        var dispose = function() {
+          if (savedSelection !== null) {
+            // Restore the original selection (if any)
+            sel.removeAllRanges();
+            for (var i = 0; i < savedSelection.length; i++) {
+              sel.addRange(savedSelection[i]);
+            }
+            savedSelection.length = 0;
+          }
+        };
+
+        return {
+          getInnerText: getInnerText,
+          dispose: dispose
+        };
+      })();
+
       // BEGIN OUTLINE ALGORITHM
       // STEP 1
       var currentOutlinee = null; // element whose outline is being created
@@ -542,7 +586,7 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
       function extendHeadingElement(node) {
         extendHeadingContentElement(node);
         node.rank = -parseInt(node.nodeName.charAt(1));
-        node.text = node.textContent;
+        node.text = innerTextShim.getInnerText(node);
       }
 
       function extendHeadingGroupElement(node) {
@@ -552,7 +596,7 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
           var h = node.getElementsByTagName("h" + i);
           if (h.length > 0) {
             node.rank = -i;
-            node.text = h[0].textContent;
+            node.text = innerTextShim.getInnerText(h[0]);
             break;
           }
         }
@@ -583,6 +627,8 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
           node = node.parentNode;
         }
       }
+
+      innerTextShim.dispose();
     }
 
     if (highlighting) {
@@ -689,7 +735,7 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
 
         // We precompute and store the top and bottom coordinates
         // Although zooming and (potential) rewrapping invalidate these coordinates,
-        // but rewrapping should never occur, and after zooming the TOC can be manually revoked.
+        // but rewrapping should never occur, and after zooming the TOC can be manually reinvoked.
         // The speed-up for the optimization shall outweigh the inaccuracy due to zooming.
         (function() {
           var tis = tocItems;

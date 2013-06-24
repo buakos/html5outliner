@@ -29,3 +29,4 @@ Added by buakos for the bookmarklet:
   * if `true`, it uses the default Ctrl-Alt-O key (code 5199);
   * if a number, it defines the `keyCode` in the lower bits, the `ctrlKey` (1024), the `shiftKey` (2048) and the `altKey` (4096) in the upper ones;
   * if `false`, the hotkey is disabled.
+* switch to `innerText` from `textContent` for setting the `text` value, and simulate it in Firefox (or wherever needed) by using `Selection.toString()`.
