@@ -208,9 +208,7 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
       toDispose.push((function() {
         var hook = function(e) {
           if (e.keyCode === 27) {
-            setTimeout(function() {
-              close();
-            }, 100);
+            close();
           }
         };
         document.addEventListener("keyup", hook, true);
