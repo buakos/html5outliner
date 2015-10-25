@@ -489,7 +489,7 @@ U9XufvcrYjSXr9Kk95AySwaxaF/Gv3Vpt48+QOzetGdggS8Ufi+3PSn3dcnB2UVheGKearIMv/f4AmXl
       }
 
       function isHidden(node) {
-        return node.hidden;
+        return node.hidden || (isElement(node) && window.getComputedStyle(node).display === 'none');
       }
 
       function isSectioningContentElement(node) {

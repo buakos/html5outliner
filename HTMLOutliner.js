@@ -144,7 +144,7 @@ function HTMLOutline(root) {
   }
 
   function isHidden(node) {
-    return node.hidden;
+    return node.hidden || (isElement(node) && window.getComputedStyle(node).display === 'none');
   }
 
   function isSectioningContentElement(node) {

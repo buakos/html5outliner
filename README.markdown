@@ -21,7 +21,7 @@ The function `HTMLOutline` adds several properties to the nodes in the DOM subtr
 * `rank` is the [rank](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#rank) of a heading content element;
 * `depth` is the [outline depth](http://www.whatwg.org/specs/web-apps/current-work/multipage/sections.html#outline-depth) of a heading content element.
 
-Added by buakos for the bookmarklet:
+Added by buakos to the bookmarklet:
 
 * live highlighting of the current item with an arrow icon (can be enabled/disabled by option `highlighting`);
 * closing on Escape (can be enabled/disabled by option `closeOnEsc`);
@@ -29,4 +29,4 @@ Added by buakos for the bookmarklet:
   * if `true`, it uses the default Ctrl-Alt-O key (code 5199);
   * if a number, it defines the `keyCode` in the lower bits, the `ctrlKey` (1024), the `shiftKey` (2048) and the `altKey` (4096) in the upper ones;
   * if `false`, the hotkey is disabled.
-* switch to `innerText` from `textContent` for setting the `text` value, and simulate it in Firefox (or wherever needed) by using `Selection.toString()`.
+* switch to `innerText` from `textContent` to set the `text` value, and simulate it in Firefox (or wherever needed) by using `Selection.toString()`.
